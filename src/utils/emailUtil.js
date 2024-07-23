@@ -27,6 +27,23 @@ const sendVerificationEmail = async (email) => {
   }
 };
 
+// cron.schedule('* * * * *', async () => {
+//   const notifications = await getUnsentNotifications();
+
+//   const now = new Date();
+//   for (const notification of notifications) {
+//       const flashSale = await getFlashSaleById(notification.flashsale_id); // Hàm này cần được định nghĩa trong flashSaleModel
+
+//       const flashSaleStartTime = new Date(flashSale.start_time);
+//       const diffMinutes = (flashSaleStartTime - now) / 1000 / 60;
+
+//       if (diffMinutes <= 15) {
+//           const user = await getUserById(notification.user_id); // Hàm này cần được định nghĩa trong userModel
+//           await sendEmail(user.email, 'FlashSale Notification', notification.message);
+//           await markNotificationAsSent(notification.id);
+//       }
+//   }
+// });
 module.exports = {
   sendVerificationEmail
 };

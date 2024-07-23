@@ -10,6 +10,7 @@ const createUser = async (email, password) => {
   return result.insertId;
 };
 
+
 const verifyUser = async (email) => {
   const [result] = await pool.query('UPDATE Users SET is_verified = ? WHERE email = ?', [true, email]);
   return result.affectedRows;

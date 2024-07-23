@@ -1,7 +1,10 @@
 const pool = require('../configs/database');
 
-const createOrder = async (user_id, total_amount) => {
-  const [result] = await pool.query('INSERT INTO Orders (user_id, total_amount) VALUES (?, ?)', [user_id, total_amount]);
+const createOrder = async (userId, totalAmount, voucherId = null, discountAmount = 0, finalAmount = totalAmount - discountAmount) => {
+  const [result] = await pool.execute(
+    'INSERT INTO Orders (user_id, total_amount, voucher_id, discount_amount, final_amount) VALUES (?, ?, ?, ?, ?)',
+    [userId, totalAmount, voucherId, discountAmount, finalAmount]
+  );
   return result.insertId;
 };
 

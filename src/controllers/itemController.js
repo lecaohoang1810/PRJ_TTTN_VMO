@@ -23,7 +23,27 @@ exports.getItem = async (req, res) => {
 };
 
 exports.createItem = async (req, res) => {
-  const newItem = req.body;
+  const { name, barcode, purchase_price, selling_price, weight, description, stock_quantity, category_id } = req.body;
+
+  if (!name || !barcode || !purchase_price || !selling_price || !weight || !description || !stock_quantity || !category_id) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  const newItem = {
+    name,
+    barcode,
+    purchase_price,
+    selling_price,
+    weight,
+    description,
+    stock_quantity,
+    category_id,
+    thumbnail: req.files.thumbnail ? req.files.thumbnail[0].filename : null,
+    details: req.files.details ? JSON.stringify(req.files.details.map(file => file.filename)) : null,
+    created_at: new Date(),
+    updated_at: new Date()
+  };
+
   try {
     const itemId = await createItem(newItem);
     res.status(201).json({ message: 'Item created successfully', itemId });
@@ -34,7 +54,26 @@ exports.createItem = async (req, res) => {
 
 exports.updateItem = async (req, res) => {
   const { id } = req.params;
-  const updatedItem = req.body;
+  const { name, barcode, purchase_price, selling_price, weight, description, stock_quantity, category_id } = req.body;
+
+  if (!name || !barcode || !purchase_price || !selling_price || !weight || !description || !stock_quantity || !category_id) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  const updatedItem = {
+    name,
+    barcode,
+    purchase_price,
+    selling_price,
+    weight,
+    description,
+    stock_quantity,
+    category_id,
+    thumbnail: req.files.thumbnail ? req.files.thumbnail[0].filename : null,
+    details: req.files.details ? JSON.stringify(req.files.details.map(file => file.filename)) : null,
+    updated_at: new Date()
+  };
+
   try {
     const rowsAffected = await updateItemById(id, updatedItem);
     if (rowsAffected === 0) {
