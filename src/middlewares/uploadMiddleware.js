@@ -4,7 +4,7 @@ const path = require('path');
 // Cấu hình lưu trữ file cho Category
 const categoryStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'src/public/images/categoryImage/');
+    cb(null, '');
   },
   filename: (req, file, cb) => {
     const originalName = file.originalname.replace(/\s+/g, '-'); // Thay khoảng trắng bằng dấu gạch ngang
@@ -16,9 +16,9 @@ const categoryStorage = multer.diskStorage({
 const itemStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (file.fieldname === 'thumbnail') {
-      cb(null, 'src/public/images/itemImage/thumbnail/');
+      cb(null, '');
     } else if (file.fieldname === 'details') {
-      cb(null, 'src/public/images/itemImage/itemDetails/');
+      cb(null, '');
     } else {
       cb(new Error('Invalid fieldname for file upload'), false);
     }

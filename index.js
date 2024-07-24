@@ -30,11 +30,11 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 app.use('/auth', authRoutes);
-app.use('/api1', categoryRoutes);
-app.use('/api2', itemRoutes);
-app.use('/api3', orderRoutes);
-app.use('/api4', voucherRoutes);
-app.use('/api5', flashsaleRoutes);
+app.use('/v1', categoryRoutes);
+app.use('/v2', itemRoutes);
+app.use('/v3', orderRoutes);
+app.use('/v4', voucherRoutes);
+app.use('/v5', flashsaleRoutes);
 // app.use('/api6', notificationRoutes);
 
 const PORT = process.env.PORT || 3000;

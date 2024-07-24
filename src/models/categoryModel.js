@@ -51,8 +51,10 @@ const updateCategoryOrder = async (id, newOrderPosition) => {
     await connection.query('UPDATE Categories SET order_position = ? WHERE id = ?', [newOrderPosition, id]);
 
     await connection.commit();
+    console.log('Transaction committed');
   } catch (error) {
     await connection.rollback();
+    console.log('Transaction rollbacked due to error:', error.message);
     throw error;
   } finally {
     connection.release();
