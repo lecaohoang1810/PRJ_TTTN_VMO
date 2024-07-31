@@ -14,7 +14,8 @@ exports.handleRegister = async (req, res) => {
     return res.status(400).json({ message: 'Passwords do not match' });
   }
 
-  try {grantAdminRights;
+  try {
+    // Đăng ký người dùng
     const userId = await register(email, username, password);
     res.status(201).json({ message: 'User registered successfully', userId });
   } catch (error) {
@@ -37,6 +38,7 @@ exports.handleRegisterAdmin = async (req, res) => {
   }
 
   try {
+    // Đăng ký admin
     const userId = await registerAdmin(email, username, password);
     res.status(201).json({ message: 'Admin registered successfully', userId });
   } catch (error) {
@@ -48,6 +50,7 @@ exports.handleLogin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Đăng nhập và nhận token
     const token = await login(email, password);
     res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
@@ -59,17 +62,20 @@ exports.handleVerifyEmail = async (req, res) => {
   const { email } = req.query;
 
   try {
+    // Xác minh email
     await verifyEmail(email);
     res.status(200).json({ message: 'Email verified successfully' });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
+
 exports.handleGrantAdminRights = async (req, res) => {
   const { email } = req.body;
   const adminEmail = req.user.email; // Email của người đang gửi yêu cầu
 
   try {
+    // Cấp quyền admin
     const message = await grantAdminRights(adminEmail, email);
     res.status(200).json({ message });
   } catch (error) {

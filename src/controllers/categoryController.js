@@ -1,4 +1,4 @@
-const { getAllCategories, getCategoryById, createCategory, updateCategory, deleteCategory, updateCategoryOrder } = require('../models/categoryModel');
+const { getAllCategories, getCategoryById, createCategory, updateCategory, deleteCategory, updateCategoryOrder, toggleCategoryStatus } = require('../models/categoryModel');
 
 exports.handleGetAllCategories = async (req, res) => {
   try {
@@ -85,6 +85,29 @@ exports.handleUpdateCategoryBanner = async (req, res) => {
   }
 };
 
+exports.handleToggleCategoryStatus = async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const category = await getCategoryById(id);
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    // Toggle trạng thái: nếu hiện tại là 'active' thì đổi thành 'inactive', ngược lại đổi thành 'active'
+    const newStatus = category.status === 'active' ? 'inactive' : 'active';
+
+    const affectedRows = await toggleCategoryStatus(id, newStatus);
+    if (affectedRows === 0) {
+      return res.status(404).json({ message: 'Category not found or status unchanged' });
+    }
+
+    res.status(200).json({ message: 'Category status updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating category status' });
+  }
+};
+
 exports.handleUpdateCategoryOrder = async (req, res) => {
   const { id } = req.params;
   const { newOrderPosition } = req.body;
@@ -95,9 +118,9 @@ exports.handleUpdateCategoryOrder = async (req, res) => {
       return res.status(404).json({ message: 'Category not found' });
     }
 
-    const affectedRows = await updateCategoryOrder(id, newOrderPosition);
-    if (affectedRows === 0) {
-      return res.status(404).json({ message: 'Category not found or order position unchanged' });
+    // Chỉ cập nhật nếu newOrderPosition khác với current order_position
+    if (category.order_position !== newOrderPosition) {
+      await updateCategoryOrder(id, newOrderPosition);
     }
 
     res.status(200).json({ message: 'Category order position updated successfully' });

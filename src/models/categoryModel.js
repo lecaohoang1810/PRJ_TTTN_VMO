@@ -40,18 +40,24 @@ const updateCategoryOrder = async (id, newOrderPosition) => {
     }
     const currentOrderPosition = rows[0].order_position;
 
-    // Cập nhật vị trí của các danh mục khác
+    // Điều chỉnh vị trí của các danh mục khác
     if (currentOrderPosition < newOrderPosition) {
-      await connection.query('UPDATE Categories SET order_position = order_position - 1 WHERE order_position > ? AND order_position <= ?', [currentOrderPosition, newOrderPosition]);
+      await connection.query(
+        'UPDATE Categories SET order_position = order_position - 1 WHERE order_position > ? AND order_position <= ?',
+        [currentOrderPosition, newOrderPosition]
+      );
     } else if (currentOrderPosition > newOrderPosition) {
-      await connection.query('UPDATE Categories SET order_position = order_position + 1 WHERE order_position >= ? AND order_position < ?', [newOrderPosition, currentOrderPosition]);
+      await connection.query(
+        'UPDATE Categories SET order_position = order_position + 1 WHERE order_position >= ? AND order_position < ?',
+        [newOrderPosition, currentOrderPosition]
+      );
     }
 
     // Cập nhật vị trí của danh mục hiện tại
     await connection.query('UPDATE Categories SET order_position = ? WHERE id = ?', [newOrderPosition, id]);
 
     await connection.commit();
-    console.log('Transaction committed');
+    return { message: 'Category order position updated successfully' };
   } catch (error) {
     await connection.rollback();
     console.log('Transaction rollbacked due to error:', error.message);
@@ -61,4 +67,8 @@ const updateCategoryOrder = async (id, newOrderPosition) => {
   }
 };
 
-module.exports = { getAllCategories, getCategoryById, createCategory, updateCategory, deleteCategory, updateCategoryOrder };
+const toggleCategoryStatus = async (id, newStatus) => {
+  const [result] = await pool.query('UPDATE Categories SET status = ? WHERE id = ?', [newStatus, id]);
+  return result.affectedRows;
+};
+module.exports = { getAllCategories, getCategoryById, createCategory, updateCategory, deleteCategory, updateCategoryOrder, toggleCategoryStatus };

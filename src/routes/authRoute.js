@@ -1,6 +1,6 @@
 const express = require('express');
 const { handleRegister, handleLogin, handleVerifyEmail, handleRegisterAdmin, handleGrantAdminRights } = require('../controllers/authController');
-const checkAdmin = require('../middlewares/adminMiddleware');
+const {checkAdmin, checkAuth, checkNotAdmin} = require('../middlewares/authMiddleware');
 const router = express.Router();
 
 // Route để đăng ký người dùng
