@@ -1,5 +1,6 @@
+const crypto = require('crypto');
 const { register, login, verifyEmail, registerAdmin, grantAdminRights } = require('../services/authService');
-
+const {findUserByEmail} = require('../models/userModel');
 exports.handleRegister = async (req, res) => {
   const { email, password, username, confirmPassword } = req.body;
 
@@ -81,4 +82,48 @@ exports.handleGrantAdminRights = async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
+};
+
+exports.handleForgetPassword = async (req, res) => {
+  const { email } = req.body;
+  const user = await findUserByEmail(email);
+
+  if (!user) {
+    return res.status(404).json({ message: 'Email does not exist.' });
+  }
+
+  const token = crypto.randomBytes(20).toString('hex');
+  await setResetToken(email, token);
+
+  const resetLink = `http://${req.headers.host}/reset-password/${token}`;
+  await sendEmail(email, 'Password Reset', `Click the link to reset your password: ${resetLink}`);
+
+  res.json({ message: 'Password reset email sent.' });
+};
+
+exports.handleResetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+  const user = await getResetToken(token);
+
+  if (!user) {
+    return res.status(400).json({ message: 'Invalid or expired token.' });
+  }
+
+  await updatePassword(user.email, password);
+  res.json({ message: 'Password has been updated.' });
+};
+
+exports.handleChangePassword = async (req, res) => {
+  const { email, oldPassword, newPassword } = req.body;
+  const user = await authenticateUser(email);
+
+  if (!user || user.password !== oldPassword) {
+    return res.status(400).json({ message: 'Old password is incorrect.' });
+  }
+
+  await updatePassword(email, newPassword);
+  await invalidateTokens(email); // Vô hiệu hóa tất cả token hiện tại
+
+  res.json({ message: 'Password has been changed and all current tokens have been invalidated.' });
 };

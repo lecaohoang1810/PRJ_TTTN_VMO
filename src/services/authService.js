@@ -1,7 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { findUserByEmail, createUser, createAdmin, verifyUser, makeAdmin } = require('../models/userModel');
-const { sendVerificationEmail } = require('../utils/emailUtil');
+const crypto = require('crypto');
+const { findUserByEmail, createUser, createAdmin, verifyUser, makeAdmin, updateUserPassword, savePasswordResetToken, findUserByResetToken, invalidateUserTokens } = require('../models/userModel');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/emailUtil');
 require('dotenv').config();
 
 const register = async (email, username, password) => {
@@ -57,20 +58,63 @@ const verifyEmail = async (email) => {
 
   await verifyUser(email);
 };
+
 const grantAdminRights = async (adminEmail, targetEmail) => {
-  // Tìm người dùng cần cấp quyền
   const user = await findUserByEmail(targetEmail);
   if (!user) {
     throw new Error('User not found');
   }
 
-  // Cấp quyền admin cho người dùng
   await makeAdmin(targetEmail);
   return 'Admin rights granted successfully';
 };
+
+const forgetPassword = async (email) => {
+  const user = await findUserByEmail(email);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const token = crypto.randomBytes(32).toString('hex');
+  const expires = new Date(Date.now() + 3600000); // 1 hour from now
+  await savePasswordResetToken(user.id, token, expires);
+
+  await sendPasswordResetEmail(email, token);
+};
+
+const resetPassword = async (token, newPassword) => {
+  const user = await findUserByResetToken(token);
+  if (!user) {
+    throw new Error('Invalid or expired token');
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  await updateUserPassword(user.id, hashedPassword);
+};
+
+const changePassword = async (email, oldPassword, newPassword) => {
+  const user = await findUserByEmail(email);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+  if (!isPasswordValid) {
+    throw new Error('Invalid old password');
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  await updateUserPassword(user.id, hashedPassword);
+  await invalidateUserTokens(user.id);
+};
+
 module.exports = {
   register,
   registerAdmin,
   login,
-  verifyEmail, grantAdminRights
+  verifyEmail,
+  grantAdminRights,
+  forgetPassword,
+  resetPassword,
+  changePassword
 };
